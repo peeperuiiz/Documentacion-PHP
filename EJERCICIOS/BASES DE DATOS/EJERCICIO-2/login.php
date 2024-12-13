@@ -13,7 +13,7 @@
         
         $conexion = new mysqli("localhost", "root", "", "practica");
 
-        $consulta = "insert into usuarios (nom, t_inicio) values (?,?)";
+        $consulta = "insert into usuarios (nom, t_inicio) values (?,?);";
         $sentencia = $conexion->prepare($consulta);
 
         $t_inicio = time();
@@ -21,6 +21,8 @@
         try{
             $sentencia->bind_param("si", $_POST["nom"], $t_inicio);
             $sentencia->execute();
+            //$sentencia->fetch();
+            $sentencia->close();
             header("Location: preguntas.php");
         }catch(Exception $e){
             echo "El nombre ya está en uso";
