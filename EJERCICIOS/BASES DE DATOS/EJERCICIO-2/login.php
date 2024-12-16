@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kahoot Vegano</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -17,11 +18,11 @@
         $sentencia = $conexion->prepare($consulta);
 
         $t_inicio = time();
+        $nom = $_POST["nom"];
 
         try{
             $sentencia->bind_param("si", $_POST["nom"], $t_inicio);
             $sentencia->execute();
-            //$sentencia->fetch();
             $sentencia->close();
             header("Location: preguntas.php");
         }catch(Exception $e){
@@ -38,6 +39,7 @@
         <input type="text" name="nom" require>
         <br>
         <input type="submit" value="Enviar" name= "btt">
+        <input type="hidden" name="n" value="<?php echo $nom; ?>">
     </form>
 
     <?php

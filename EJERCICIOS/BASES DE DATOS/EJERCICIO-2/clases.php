@@ -1,69 +1,85 @@
 <?php
+    class Conexion {
+        public $conexion;
 
-    // CLASE USUARIOS
-    class usuarios{
-        // VARIABLES
-        private $nombre;
-        private $t_inicio;
-        private $t_final;
-
-        // CONSTRUCTOR
-        public function __construct($n, $tI, $tF = null){
-            $this->nombre = $n;
-            $this->t_inicio = $tI;
-            $this->t_final = $tF;
+        public function __construct() {
+            $this->conexion = new mysqli("localhost", "root", "", "practica");
+            if ($this->conexion->connect_error) {
+                die("Error de conexión: " . $this->conexion->connect_error);
+            }
         }
 
-        // GETTER & SETTER
-        public function __get($n){
-            return $this->$n;
-        }
-
-        public function __get($tI){
-            return $this->$tI;
-        }
-
-        public function __get($tF){
-            return $this->$tF;
-        }
-
-        public function __set($tF){
-            $this->t_final = $tF;
+        public function __destruct() {
+            $this->conexion->close();
         }
     }
 
+    class Preguntas {
+        public $conexion;
 
+        public function __construct() {
+            $this->conexion = new Conexion();
+        }
 
-    // CLASE PREGUNTAS
-    class preguntas{
-        // VARIABLES
-        private $id;
-        private $pregunta;
-        private $respuesta;
+        public function obtenerPreguntaPorId($id) {
+            $consulta = "select pregunta, respuesta from preguntas where id = ?";
+            $sentencia = $this->conexion->conexion->prepare($consulta);
+            $sentencia->bind_param("i", $id);
+            $sentencia->execute();
+            $sentencia->bind_result($pregunta, $respuesta);
+            $resultado = null;
+            while ($sentencia->fetch()) {
+                $resultado = [$pregunta, $respuesta];
+            }
+            $sentencia->close();
+            return $resultado;
+        }
 
-        // CONSTRUCTOR
-        public function __construct($i, $p, $r){
-            $this->id = $i;
-            $this->pregunta = $p;
-            $this->respuesta = $r;
+        public function obtenerPreguntaRandom() {
+            $consulta = "select id, pregunta from preguntas order by rand() limit 1";
+            $sentencia = $this->conexion->conexion->prepare($consulta);
+            $sentencia->execute();
+            $sentencia->bind_result($id, $pregunta);
+            $resultado = null;
+            while ($sentencia->fetch()) {
+                $resultado = [$id, $pregunta];
+            }
+            $sentencia->close();
+            return $resultado;
         }
     }
 
+    class Ranking {
+        public $conexion;
 
+        public function __construct() {
+            $this->conexion = new Conexion();
+        }
 
-    // CLASE RANKING
-    class ranking{
-        // VARIABLES
-        private $id;
-        private $usuario;
-        private $tiempo;
+        public function actualizarTiempoFinal($usuario, $tFinal) {
+            $consulta = "update usuarios set t_final = ? where nom = ?";
+            $sentencia = $this->conexion->conexion->prepare($consulta);
+            $sentencia->bind_param("is", $tFinal, $usuario);
+            $sentencia->execute();
+            $sentencia->close();
+        }
 
-        // CONSTRUCTOR
-        public function __construct($i, $u, $t){
-            $this->id = $i;
-            $this->usuario = $u;
-            $this->tiempo = $t;
+        public function insertarRanking($usuario, $tiempo) {
+            $consulta = "insert into ranking (usuario, tiempo) values (?, ?)";
+            $sentencia = $this->conexion->conexion->prepare($consulta);
+            $sentencia->bind_param("si", $usuario, $tiempo);
+            $sentencia->execute();
+            $sentencia->close();
+        }
+
+        public function obtenerRanking() {
+            $consulta = "select usuario, tiempo from ranking order by tiempo asc";
+            $resultado = $this->conexion->conexion->query($consulta);
+            $ranking = [];
+            while ($fila = $resultado->fetch_assoc()) {
+                $ranking[] = $fila;
+            }
+            return $ranking;
         }
     }
-
 ?>
